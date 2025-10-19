@@ -2,15 +2,19 @@ package pages;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import utils.SessionManager;
+
+import java.util.Set;
 
 public class Login extends BasePage {
 
-    private WebDriver driver;
+    //private WebDriver driver;
 
     public Login(WebDriver driver) {
         super(driver);
@@ -29,6 +33,7 @@ public class Login extends BasePage {
 
         clickElement("//h4[normalize-space()='Seleccionar Cliente Comercial']");
         currentUrl = getUrl();
+        SessionManager.saveAccessToken(driver);
         finalUrl = currentUrl.replace(dotenv.get("GCH_URL"), dotenv.get("GCH_ENCUESTAS"));
         System.out.println("url gch: " + dotenv.get("GCH_URL"));
         System.out.println("url encuestas gch: " + dotenv.get("GCH_ENCUESTAS"));

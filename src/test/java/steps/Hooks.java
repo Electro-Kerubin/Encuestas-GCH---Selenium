@@ -1,7 +1,6 @@
 package steps;
 
 import io.cucumber.java.Before;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -21,21 +20,29 @@ public class Hooks extends BasePage {
     private static final Dotenv dotenv = Dotenv.load();
 
     private static final String GCH_ENCUESTAS = dotenv.get("GCH_ENCUESTAS");
+    private static final String GCH_URL = dotenv.get("GCH_URL");
     private static final String RUT_USER = dotenv.get("RUT_USER");
     private static final String PASS_USER = dotenv.get("PASS_USER");
 
     @Before
     public void setUp() {
-        navigateTo(GCH_ENCUESTAS);
 
-        if (SessionManager.cookiesExist() && !SessionManager.cookiesExist()) {
-            SessionManager.loadCookies(driver);
-            driver.navigate().refresh();
-        } else {
+        String accessToken = SessionManager.readAcessToken();
+        String URL = GCH_ENCUESTAS + accessToken;
+        System.out.println("URL: " + URL);
+        navigateTo(URL);
+        clickElement("//h4[normalize-space()='Seleccionar Cliente Comercial']");
+        navigateTo(GCH_ENCUESTAS);
+        System.out.println("url actual: " + getUrl());
+        System.out.println("validacion: " + !getUrl().equals(GCH_ENCUESTAS + "/"));
+        if(!getUrl().equals(GCH_ENCUESTAS + "/")) {
+            navigateTo(GCH_ENCUESTAS);
             Login loginPage =  new Login(driver);
             loginPage.login(RUT_USER, PASS_USER);
-            SessionManager.saveCookies(driver);
         }
+
+
+
     }
 
     @After

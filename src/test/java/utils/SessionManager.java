@@ -1,63 +1,54 @@
 package utils;
 
 import com.google.gson.Gson;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.openqa.selenium.Cookie;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.json.TypeToken;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.Set;
 
 public class SessionManager {
-    private static final String COOKIE_FILE_PATH = "cookies.json";
+
+    private static final Dotenv dotenv = Dotenv.load();
+
+    private static final Path filePath = Path.of("accessToken.txt");
+    private static final String GCH_URL = dotenv.get("GCH_URL");
     private static final Gson gson = new Gson();
 
-    public static void saveCookies(WebDriver driver) {
-        try (Writer writer = new FileWriter(COOKIE_FILE_PATH)) {
-            Set<Cookie> cookies = driver.manage().getCookies();
-            gson.toJson(cookies, writer);
-            System.out.println("Cookies guardadas correctamente en cookies.json");
-        } catch (IOException e) {
-            System.err.println("Error al guardar cookies: " + e.getMessage());
+    public static void saveAccessToken(WebDriver driver) {
+        try {
+            String currentUrl = driver.getCurrentUrl();
+            String accessToken = currentUrl.replace( GCH_URL, "");
+            //System.out.println( "accesstoken : " + accessToken );
+            Files.write(filePath, accessToken.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception e) {
+            System.err.println("Error al guardar accessToken: " + e.getMessage());
         }
     }
 
-    public static void loadCookies(WebDriver driver) {
-        File file = new File(COOKIE_FILE_PATH);
-        if (!file.exists()) {
-            System.out.println("No se encontró cookies.json. Se realizará login.");
-            return;
-        }
+    public static String readAcessToken() {
+        try {
+            Path filePath = Path.of("accessToken.txt");
 
-        try (Reader reader = new FileReader(file)) {
-            Type cookieSetType = new TypeToken<HashSet<Cookie>>() {}.getType();
-            Set<Cookie> cookies = gson.fromJson(reader, cookieSetType);
+            String token = Files.readString(filePath);
 
-            for (Cookie cookie : cookies) {
-                try {
-                    driver.manage().addCookie(cookie);
-                } catch (Exception ex) {
-                    System.err.println("Error agregando cookie: " + cookie.getName());
-                }
-            }
-
-            System.out.println("Cookies cargadas desde cookies.json");
-        } catch (IOException e) {
-            System.err.println("Error al cargar cookies: " + e.getMessage());
+            System.out.println("AccessToken leido: " + token);
+            return token;
+        } catch (Exception e) {
+            System.err.println("Error al leer accessToken: " + e.getMessage());
+            return null;
         }
     }
 
-    public static boolean cookiesExist() {
-        return new File(COOKIE_FILE_PATH).exists();
-    }
 
-    public static boolean cookiesExpired() {
-        File file = new File(COOKIE_FILE_PATH);
-        if (!file.exists()) return true;
-        long age = System.currentTimeMillis() - file.lastModified();
-        long twelveHours = 12 * 60 * 60 * 1000; // 12 horas
-        return age > twelveHours;
-    }
 }

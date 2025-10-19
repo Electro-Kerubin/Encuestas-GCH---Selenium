@@ -1,9 +1,8 @@
 # Ignore Gradle project-specific cache directory
 .gradle
 .env
-cookies.json
-target
-target/cucumber-reports
+accessToken.txt
+target/
 
 # Ignore Gradle build output directory
 build
