@@ -2,6 +2,7 @@
 .gradle
 .env
 cookies.json
+target
 
 # Ignore Gradle build output directory
 build
