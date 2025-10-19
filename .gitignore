@@ -3,6 +3,7 @@
 .env
 cookies.json
 target
+target/cucumber-reports
 
 # Ignore Gradle build output directory
 build
