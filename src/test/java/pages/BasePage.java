@@ -35,7 +35,11 @@ public class BasePage {
     }
 
     public static void closeBrowser() {
-        driver.quit();
+        if (driver != null) {
+            driver.quit();
+            driver = null;
+            System.out.println("🧹 Navegador cerrado correctamente");
+        }
     }
 
     public static void navigateTo(String url) {
@@ -55,11 +59,24 @@ public class BasePage {
     }
 
     public void clickElement(String locator) {
+        try {
+            By overlayLocator = By.cssSelector("div.overlay"); // ajusta si tu selector cambia
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(overlayLocator));
+            System.out.println("Overlay desapareció, continuando...");
+
+        } catch (Exception e) {
+            System.out.println("No se detectó overlay o ya había desaparecido.");
+        }
+
         Find(locator).click();
     }
 
     public void elementIsVisible(String locator) {
         Find(locator).isDisplayed();
+    }
+
+    public String getText(String locator) {
+        return Find(locator).getText();
     }
 
     public void write(String locator, String keysToSend) {
@@ -75,3 +92,5 @@ public class BasePage {
         actions.sendKeys(Keys.ENTER).perform();
     }
 }
+
+

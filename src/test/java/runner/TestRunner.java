@@ -1,11 +1,12 @@
 package runner;
 
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
-import pages.BasePage;
+import pages.Login;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
@@ -21,6 +22,12 @@ import pages.BasePage;
         monochrome = true
 )
 public class TestRunner {
+
+    @BeforeClass
+    public static void login() {
+        Login login = new Login();
+        login.loginGCH();
+    }
 
     @AfterClass
     public static void closeBrowserAfterTest() {
