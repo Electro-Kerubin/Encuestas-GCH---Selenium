@@ -1,14 +1,12 @@
 package pages;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
@@ -55,24 +53,50 @@ public class BasePage {
     }
 
     private WebElement Find(String locator) {
-        return wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(locator)));
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(locator)));
+    }
+
+    public boolean elementExists(String locator) {
+        return driver.findElements(By.xpath(locator)).size() > 0;
     }
 
     public void clickElement(String locator) {
-        try {
-            By overlayLocator = By.cssSelector("div.overlay"); // ajusta si tu selector cambia
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(overlayLocator));
-            System.out.println("Overlay desapareció, continuando...");
+        int intentos = 0;
+        while (intentos < 5) {
+            try {
+                By overlayLocator = By.cssSelector("div.overlay");
+                wait.until(ExpectedConditions.invisibilityOfElementLocated(overlayLocator));
+            } catch (Exception e) {
+                System.out.println("No se detectó overlay o ya había desaparecido.");
+            }
 
-        } catch (Exception e) {
-            System.out.println("No se detectó overlay o ya había desaparecido.");
+            try {
+                Find(locator).click();
+                return;
+            } catch (StaleElementReferenceException stale) {
+                System.out.println("reintento: " + intentos + "/5");
+                intentos++;
+            } catch (Exception e) {
+                System.out.println("Error al hacer click: " + e.getMessage());
+                throw e;
+            }
         }
 
-        Find(locator).click();
+        throw new RuntimeException("No se pudo hacer click en el elemento: " + locator);
+
     }
 
-    public void elementIsVisible(String locator) {
-        Find(locator).isDisplayed();
+    public void scrollToElement(String locator) {
+        WebElement element = driver.findElement(By.xpath(locator));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
+    }
+
+    public void scrollToTop() {
+        ((JavascriptExecutor) driver).executeScript("window.scrollTo({ top: 0, behavior: 'smooth' });");
+    }
+
+    public boolean elementIsVisible(String locator) {
+        return Find(locator).isDisplayed();
     }
 
     public String getText(String locator) {
@@ -87,6 +111,23 @@ public class BasePage {
     public void writeByKeys(String keysToSend) {
         actions.sendKeys(keysToSend).perform();
     }
+
+    public void selectFromDropdownByValue(String locator, String value) {
+
+        WebElement element = new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(ExpectedConditions.elementToBeClickable(By.xpath(locator)));
+
+        Select dropdown = new Select(element);
+
+        new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(driver1 -> dropdown.getOptions()
+                        .stream()
+                        .anyMatch(opt -> opt.getAttribute("value").equals(value)));
+
+        dropdown.selectByValue(value);
+    }
+
+
 
     public void enterAction() {
         actions.sendKeys(Keys.ENTER).perform();
