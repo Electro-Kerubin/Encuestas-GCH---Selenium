@@ -31,18 +31,20 @@ public class Hooks extends BasePage {
         String URL = GCH_ENCUESTAS + accessToken;
         System.out.println("URL: " + URL);
         navigateTo(URL);
-        clickElement("//h4[normalize-space()='Seleccionar Cliente Comercial']");
+        try {
+            clickElement("//h4[normalize-space()='Seleccionar Cliente Comercial']");
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+        }
         navigateTo(GCH_ENCUESTAS);
         System.out.println("url actual: " + getUrl());
         System.out.println("validacion: " + !getUrl().equals(GCH_ENCUESTAS + "/"));
-        if(!getUrl().equals(GCH_ENCUESTAS + "/")) {
+        System.out.println("access token:" + accessToken.isBlank());
+        if(!getUrl().equals(GCH_ENCUESTAS + "/") || accessToken.isBlank()) {
             navigateTo(GCH_ENCUESTAS);
             Login loginPage =  new Login(driver);
             loginPage.login(RUT_USER, PASS_USER);
         }
-
-
-
     }
 
     @After

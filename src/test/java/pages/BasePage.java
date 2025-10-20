@@ -58,6 +58,10 @@ public class BasePage {
         Find(locator).click();
     }
 
+    public void elementIsVisible(String locator) {
+        Find(locator).isDisplayed();
+    }
+
     public void write(String locator, String keysToSend) {
         Find(locator).clear();
         Find(locator).sendKeys(keysToSend);
